@@ -24,12 +24,6 @@ fun LoginScreen(onLoginSuccess: () -> Unit = {}) {
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
 
-    // Validaciones de contraseña
-    val hasNumber = password.any { it.isDigit() }
-    val hasSpecialChar = password.any { !it.isLetterOrDigit() }
-    val isPasswordValid = password.isNotBlank() && hasNumber && hasSpecialChar
-    val showPasswordError = password.isNotBlank() && !isPasswordValid
-
     Scaffold { paddingValues ->
         Column(
             modifier = Modifier
@@ -80,21 +74,8 @@ fun LoginScreen(onLoginSuccess: () -> Unit = {}) {
                 modifier = Modifier.fillMaxWidth(),
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                singleLine = true,
-                isError = showPasswordError
+                singleLine = true
             )
-            
-            // Mensaje de error visual debajo del input
-            if (showPasswordError) {
-                Text(
-                    text = "Debe contener al menos un número y un carácter especial (*, #, @, etc.)",
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 16.dp, top = 4.dp)
-                )
-            }
 
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -103,7 +84,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit = {}) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                enabled = email.isNotBlank() && isPasswordValid
+                enabled = email.isNotBlank() && password.isNotBlank()
             ) {
                 Text("Iniciar Sesión", fontWeight = FontWeight.Bold)
             }

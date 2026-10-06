@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ServiTurno - Auth y Roles</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h1, h2, h3 { color: #333; }
+        .hidden { display: none; }
+        input, button, textarea { padding: 10px; margin: 5px 0; width: 100%; box-sizing: border-box; }
+        button { background-color: #007bff; color: white; border: none; cursor: pointer; border-radius: 4px; }
+        button:hover { background-color: #0056b3; }
+        .dashboard-section { margin-top: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #fff; }
+        .alert { padding: 10px; background-color: #ffdddd; border-left: 6px solid #f44336; margin-bottom: 15px; }
+
+        .content-card { border: 1px solid #ccc; padding: 10px; margin-top: 10px; border-radius: 5px; background: #fafafa;}
+        .content-author { font-size: 0.8em; color: gray; margin-bottom: 5px;}
+        .delete-btn { background-color: #dc3545; width: auto; font-size: 0.8em; padding: 5px 10px;}
+        .delete-btn:hover { background-color: #c82333; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>ServiTurno - Sistema de Accesos</h1>
+
+    <div id="error-msg" class="alert hidden"></div>
+
+    <!-- SECCIÓN DE LOGIN -->
+    <div id="login-section">
+        <h2>Iniciar Sesión</h2>
+        <input type="email" id="login-email" placeholder="Correo (ej. admin@serviturno.com)">
+        <input type="password" id="login-password" placeholder="Contraseña (ej. Admin123!)">
+        <button onclick="login()">Entrar</button>
+        <p>¿No tienes cuenta? <a href="#" onclick="toggleSection('register-section')">Regístrate</a></p>
+    </div>
+
+    <!-- SECCIÓN DE REGISTRO -->
+    <div id="register-section" class="hidden">
+        <h2>Registro</h2>
+        <input type="text" id="reg-name" placeholder="Nombre completo">
+        <input type="email" id="reg-email" placeholder="Correo electrónico">
+        <input type="password" id="reg-password" placeholder="Contraseña">
+        <button onclick="register()">Registrarse</button>
+        <p>¿Ya tienes cuenta? <a href="#" onclick="toggleSection('login-section')">Inicia Sesión</a></p>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard-section" class="hidden">
+        <h2>Bienvenido al Dashboard</h2>
+        <button onclick="logout()" style="background-color: #dc3545;">Cerrar Sesión</button>
+
+        <div class="dashboard-section">
+            <h3>Gestión de Contenidos</h3>
+
+            <!-- Crear contenido -->
+            <div style="margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+                <textarea id="new-content-text" rows="3" placeholder="Escribe aquí tu nuevo contenido..."></textarea>
+                <button onclick="createContent()" style="background-color: #28a745;">Publicar Contenido (Requiere Escritura)</button>
+            </div>
+
+            <!-- Listar contenido -->
+            <button onclick="fetchContents()">Actualizar Lista de Contenidos (Requiere Lectura)</button>
+            <div id="content-list" style="margin-top: 15px;"></div>
+        </div>
+
+        <div class="dashboard-section hidden" id="admin-panel">
+            <h3>Panel de Administrador</h3>
+            <button onclick="fetchUsers()">Cargar Usuarios</button>
+            <button onclick="fetchAudit()">Ver Auditoría</button>
+            <pre id="admin-result" style="background: #f8f9fa; padding: 10px; overflow-x: auto;"></pre>
+        </div>
+    </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
