@@ -20,22 +20,32 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.example.serviturno_visual.network.RetrofitClient
+import com.example.serviturno_visual.network.TicketCreateRequest
+import com.example.serviturno_visual.network.TicketResponse
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateTicketScreen(
+    userEmail: String = "",
     onBackClick: () -> Unit = {},
-    onTicketCreatedSuccess: () -> Unit = {}
+    onTicketCreatedSuccess: (TicketResponse) -> Unit = {}
 ) {
+    val context = LocalContext.current
     var problemDescription by remember { mutableStateOf("") }
     var selectedService by remember { mutableStateOf("Reparación / Mantenimiento") }
     var selectedDateText by remember { mutableStateOf("Mañana - 10:00 AM") }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+
     var showConfirmDialog by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
@@ -44,21 +54,45 @@ fun CreateTicketScreen(
     // Diálogo emergente antes de enviar
     if (showConfirmDialog) {
         AlertDialog(
-            onDismissRequest = { showConfirmDialog = false },
+            onDismissRequest = { if (!isLoading) showConfirmDialog = false },
             title = { Text("Confirmar Solicitud") },
             text = { Text("¿Deseas enviar tu ticket de cita para $selectedDateText? El negocio revisará tu solicitud.") },
             confirmButton = {
                 Button(
                     onClick = {
-                        showConfirmDialog = false
-                        onTicketCreatedSuccess()
-                    }
+                        isLoading = true
+                        coroutineScope.launch {
+                            try {
+                                val ticketResp = RetrofitClient.instance.createTicket(
+                                    TicketCreateRequest(
+                                        usuario_correo = userEmail.ifBlank { "jose.perez73@unach.mx" },
+                                        servicio = selectedService.trim(),
+                                        fecha_cita = selectedDateText.trim(),
+                                        descripcion = problemDescription.trim(),
+                                        foto_referencia = selectedImageUri?.toString()
+                                    )
+                                )
+                                isLoading = false
+                                showConfirmDialog = false
+                                onTicketCreatedSuccess(ticketResp)
+                            } catch (_: Exception) {
+                                isLoading = false
+                                showConfirmDialog = false
+                                android.widget.Toast.makeText(context, "Error de red al crear el ticket", android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    },
+                    enabled = !isLoading
                 ) {
-                    Text("Aceptar y Enviar")
+                    if (isLoading) {
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(20.dp))
+                    } else {
+                        Text("Aceptar y Enviar")
+                    }
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showConfirmDialog = false }) {
+                TextButton(onClick = { if (!isLoading) showConfirmDialog = false }) {
                     Text("Cancelar")
                 }
             }
